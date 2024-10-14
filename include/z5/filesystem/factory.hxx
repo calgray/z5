@@ -3,6 +3,7 @@
 #include "z5/filesystem/metadata.hxx"
 #include "z5/filesystem/dataset.hxx"
 
+#include <array>
 
 namespace z5 {
 namespace filesystem {
@@ -46,6 +47,9 @@ namespace filesystem {
                 ptr.reset(new Dataset<std::complex<float>>(dataset, metadata)); break;
             case types::complex128:
                 ptr.reset(new Dataset<std::complex<double>>(dataset, metadata)); break;
+            case types::unicode:
+                // TODO: extend metadata shape with unicode suffix length
+                ptr.reset(new Dataset<z5::types::UTF32Array<7>>(dataset, metadata)); break;
         }
         return ptr;
     }
