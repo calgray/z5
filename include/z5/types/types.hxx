@@ -44,7 +44,7 @@ namespace types {
 
         constexpr UTF32Array() : raw() {}
 
-        constexpr UTF32Array(const double& value) : UTF32Array() {}
+        constexpr UTF32Array(const double&) : UTF32Array() {}
 
         inline bool operator==(const UTF32Array& other) const {
             return raw == other.raw;
@@ -284,7 +284,7 @@ namespace types {
             } else {
                 jOpts["id"] = types::Compressors::compressorToZarr().at(compressor);
             }
-        } catch(std::out_of_range) {
+        } catch(const std::out_of_range&) {
             throw std::runtime_error("z5.DatasetMetadata.toJsonZarr: wrong compressor for zarr format");
         }
 
@@ -353,7 +353,7 @@ namespace types {
                                                 nlohmann::json & jOpts) {
         try {
             jOpts["type"] = types::Compressors::compressorToN5().at(compressor);
-        } catch(std::out_of_range) {
+        } catch(const std::out_of_range&) {
             throw std::runtime_error("z5.DatasetMetadata.toJsonN5: wrong compressor for N5 format");
         }
 
