@@ -47,9 +47,27 @@ namespace filesystem {
                 ptr.reset(new Dataset<std::complex<float>>(dataset, metadata)); break;
             case types::complex128:
                 ptr.reset(new Dataset<std::complex<double>>(dataset, metadata)); break;
-            case types::unicode:
-                // TODO: extend metadata shape with unicode suffix length
+            // TODO: extend metadata shape with unicode suffix length
+            case types::unicode1:
+                ptr.reset(new Dataset<z5::types::UTF32Array<1>>(dataset, metadata)); break;
+            case types::unicode2:
+                ptr.reset(new Dataset<z5::types::UTF32Array<2>>(dataset, metadata)); break;
+            case types::unicode3:
+                ptr.reset(new Dataset<z5::types::UTF32Array<3>>(dataset, metadata)); break;
+            case types::unicode4:
+                ptr.reset(new Dataset<z5::types::UTF32Array<4>>(dataset, metadata)); break;
+            case types::unicode5:
+                ptr.reset(new Dataset<z5::types::UTF32Array<5>>(dataset, metadata)); break;
+            case types::unicode6:
+                ptr.reset(new Dataset<z5::types::UTF32Array<6>>(dataset, metadata)); break;
+            case types::unicode7:
                 ptr.reset(new Dataset<z5::types::UTF32Array<7>>(dataset, metadata)); break;
+            case types::unicode8:
+                ptr.reset(new Dataset<z5::types::UTF32Array<8>>(dataset, metadata)); break;
+            case types::unicode9:
+                ptr.reset(new Dataset<z5::types::UTF32Array<9>>(dataset, metadata)); break;
+            case types::unicode10:
+                ptr.reset(new Dataset<z5::types::UTF32Array<10>>(dataset, metadata)); break;
         }
         return ptr;
     }
@@ -90,8 +108,27 @@ namespace filesystem {
                 ptr.reset(new Dataset<std::complex<float>>(dataset, metadata)); break;
             case types::complex128:
                 ptr.reset(new Dataset<std::complex<double>>(dataset, metadata)); break;
-            case types::unicode:
+            // TODO: extend metadata shape with unicode suffix length
+            case types::unicode1:
+                ptr.reset(new Dataset<z5::types::UTF32Array<1>>(dataset, metadata)); break;
+            case types::unicode2:
+                ptr.reset(new Dataset<z5::types::UTF32Array<2>>(dataset, metadata)); break;
+            case types::unicode3:
+                ptr.reset(new Dataset<z5::types::UTF32Array<3>>(dataset, metadata)); break;
+            case types::unicode4:
+                ptr.reset(new Dataset<z5::types::UTF32Array<4>>(dataset, metadata)); break;
+            case types::unicode5:
+                ptr.reset(new Dataset<z5::types::UTF32Array<5>>(dataset, metadata)); break;
+            case types::unicode6:
+                ptr.reset(new Dataset<z5::types::UTF32Array<6>>(dataset, metadata)); break;
+            case types::unicode7:
                 ptr.reset(new Dataset<z5::types::UTF32Array<7>>(dataset, metadata)); break;
+            case types::unicode8:
+                ptr.reset(new Dataset<z5::types::UTF32Array<8>>(dataset, metadata)); break;
+            case types::unicode9:
+                ptr.reset(new Dataset<z5::types::UTF32Array<9>>(dataset, metadata)); break;
+            case types::unicode10:
+                ptr.reset(new Dataset<z5::types::UTF32Array<10>>(dataset, metadata)); break;
         }
         return ptr;
     }
