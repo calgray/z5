@@ -126,7 +126,7 @@ namespace z5 {
             checkJson(j);
             try {
                 dtype = types::Datatypes::zarrToDtype().at(j["dtype"]);
-            } catch(std::out_of_range) {
+            } catch(const std::out_of_range&) {
                 throw std::runtime_error("Unsupported zarr dtype: " + static_cast<std::string>(j["dtype"]));
             }
             shape = types::ShapeType(j["shape"].begin(), j["shape"].end());
@@ -143,6 +143,8 @@ namespace z5 {
                 } else {
                     throw std::runtime_error("Invalid string value for fillValue");
                 }
+            } else if(fillValJson.type() == nlohmann::json::value_t::null) {
+                fillValue = std::numeric_limits<double>::quiet_NaN();
             } else {
                 fillValue = static_cast<double>(fillValJson);
             }
@@ -159,7 +161,7 @@ namespace z5 {
             std::string zarrCompressorId = compressionOpts.is_null() ? "raw" : compressionOpts["id"];
             try {
                 compressor = types::Compressors::zarrToCompressor().at(zarrCompressorId);
-            } catch(std::out_of_range) {
+            } catch(const std::out_of_range&) {
                 throw std::runtime_error("z5.DatasetMetadata.fromJsonZarr: wrong compressor for zarr format: " + zarrCompressorId);
             }
 
@@ -197,7 +199,7 @@ namespace z5 {
                 // get the actual compressor
                 try {
                     compressor = types::Compressors::n5ToCompressor().at(n5Compressor);
-                } catch(std::out_of_range) {
+                } catch(const std::out_of_range&) {
                     throw std::runtime_error("z5.DatasetMetadata.fromJsonN5: wrong compressor for n5 format");
                 }
 
@@ -215,7 +217,7 @@ namespace z5 {
                 // get the actual compressor
                 try {
                     compressor = types::Compressors::n5ToCompressor().at(n5Compressor);
-                } catch(std::out_of_range) {
+                } catch(const std::out_of_range&) {
                     throw std::runtime_error("z5.DatasetMetadata.fromJsonN5: wrong compressor for n5 format");
                 }
 

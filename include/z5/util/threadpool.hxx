@@ -345,7 +345,8 @@ inline void parallel_foreach_impl(
 ){
     std::ptrdiff_t workload = std::distance(iter, end);
 
-    // NIFTY_CHECK(workload == nItems || nItems == 0, "parallel_foreach(): Mismatch between num items and begin/end.");
+    (void)(nItems); // suppress unused
+    assert((workload == nItems || nItems == 0) && "parallel_foreach(): Mismatch between num items and begin/end.");
     const float workPerThread = float(workload)/pool.nThreads();
     const std::ptrdiff_t chunkedWorkPerThread = (std::max<std::ptrdiff_t>)(int(workPerThread/3.0f + 0.5f), 1);
 
@@ -455,7 +456,7 @@ inline void parallel_foreach_impl(
         );
         ++num_items;
     }
-    // NIFTY_CHECK(num_items == nItems || nItems == 0, "parallel_foreach(): Mismatch between num items and begin/end.");
+    assert((num_items == nItems || nItems == 0) && "parallel_foreach(): Mismatch between num items and begin/end.");
     for (auto & fut : futures)
         fut.get();
 }
@@ -475,7 +476,8 @@ inline void parallel_foreach_single_thread(
         f(0, *begin);
         ++n;
     }
-    // NIFTY_CHECK(n == nItems || nItems == 0, "parallel_foreach(): Mismatch between num items and begin/end.");
+    (void)(nItems); // suppress unused
+    assert((n == nItems || nItems == 0) && "parallel_foreach(): Mismatch between num items and begin/end.");
 }
 
 /** \brief Apply a functor to all items in a range in parallel.

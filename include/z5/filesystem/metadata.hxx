@@ -50,7 +50,7 @@ namespace metadata_detail {
             // so we need to make sure that we don't overwrite attributes
             try {
                 readAttributes(handle, j);
-            } catch(std::runtime_error) {}  // read attributes throws RE if there are no attributes, we can just ignore this
+            } catch(const std::runtime_error&) {}  // read attributes throws RE if there are no attributes, we can just ignore this
             j["n5"] = metadata.n5Format();
         }
         metadata_detail::writeMetadata(path, j);
