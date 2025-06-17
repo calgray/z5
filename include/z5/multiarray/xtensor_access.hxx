@@ -15,6 +15,76 @@
 namespace z5 {
 namespace multiarray {
 
+    inline std::size_t product(const types::ShapeType& dims) {
+        return std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<std::size_t>());
+    }
+
+    void readSubarraySingleThreaded(const Dataset& ds,
+                                    uint8_t* outBuffer,
+                                    std::size_t elementSizeBytes,
+                                    const types::ShapeType& offset,
+                                    const types::ShapeType& shape,
+                                    const std::vector<types::ShapeType>& chunkRequests) {
+        const auto& chunking = ds.chunking();
+
+        // Compute total elements requested (excluding elementSize dimension)
+        std::size_t numElementsRequested = product(shape);
+
+        // A staging buffer big enough for the largest chunk read (in elements, * elementSizeBytes)
+        std::size_t maxChunkSize = ds.defaultChunkSize();
+        std::vector<uint8_t> buffer(maxChunkSize * elementSizeBytes);
+
+        // Temporary shapes and offsets for request and chunk
+        types::ShapeType offsetInRequest, shapeInRequest, chunkShape, offsetInChunk;
+
+        for (const auto& chunkId : chunkRequests) {
+            // Find overlap between chunk and request
+            bool completeOverlap = chunking.getCoordinatesInRoi(
+                chunkId, offset, shape,
+                offsetInRequest, shapeInRequest,
+                offsetInChunk);
+
+            ds.getChunkShape(chunkId, chunkShape);
+
+            // Resize buffer if needed
+            std::size_t chunkSize = product(chunkShape);
+            if (chunkSize > maxChunkSize) {
+                buffer.resize(chunkSize * elementSizeBytes);
+                maxChunkSize = chunkSize;
+            }
+
+            // Read chunk into buffer
+            ds.readChunk(chunkId, buffer.data());
+
+            // Compute flat offsets for output and buffer:
+            std::size_t outBaseIndex = 0;
+            {
+                const auto& outShape = shape;
+                for (size_t dim = 0; dim < offsetInRequest.size(); ++dim) {
+                    std::size_t stride = std::accumulate(outShape.begin() + dim + 1, outShape.end(), 1, std::multiplies<std::size_t>());
+                    outBaseIndex += offsetInRequest[dim] * stride;
+                }
+            }
+
+            std::size_t bufferBaseIndex = 0;
+            {
+                for (size_t dim = 0; dim < offsetInChunk.size(); ++dim) {
+                    std::size_t stride = std::accumulate(chunkShape.begin() + dim + 1, chunkShape.end(), 1, std::multiplies<std::size_t>());
+                    bufferBaseIndex += offsetInChunk[dim] * stride;
+                }
+            }
+
+            // Number of elements to copy in this chunk
+            std::size_t nCopyElements = product(shapeInRequest);
+
+            // Copy each element (elementSizeBytes bytes) from buffer to outBuffer
+            for (std::size_t i = 0; i < nCopyElements; ++i) {
+                std::size_t outIdx = (outBaseIndex + i) * elementSizeBytes;
+                std::size_t bufIdx = (bufferBaseIndex + i) * elementSizeBytes;
+                std::memcpy(outBuffer + outIdx, buffer.data() + bufIdx, elementSizeBytes);
+            }
+        }
+    }
 
     template<typename T, typename ARRAY>
     inline void readSubarraySingleThreaded(const Dataset & ds,
@@ -59,7 +129,7 @@ namespace multiarray {
 
             // check if this chunk exists, if not fill output with fill value
             if(!ds.chunkExists(chunkId)) {
-                view = fillValue;;
+                view = fillValue;
                 continue;
             }
 
@@ -91,7 +161,7 @@ namespace multiarray {
             }
 
             // resize the buffer if necessary
-            if(chunkSize != buffer.size()) {
+            if(chunkSize > buffer.size()) {
                 buffer.resize(chunkSize);
             }
 
@@ -275,6 +345,54 @@ namespace multiarray {
         }
     }
 
+    template<typename ARRAY, typename ITER>
+    void readSubarrayFixedUTF32String(const z5::Dataset& ds,
+                           xt::xexpression<ARRAY>& outExpression,
+                           ITER roiBeginIter,
+                           const int numberOfThreads = 1) {
+
+        // need to cast to the actual xtensor implementation
+        auto & out = outExpression.derived_cast();
+
+        // Validate type for fixed-length UTF-32 string
+        const auto dtype = ds.getDtype();
+        if (dtype < z5::types::unicode1 || dtype > z5::types::unicode10) {
+            throw std::runtime_error("Dataset must have fixed-length UTF-32 string dtype.");
+        }
+
+        const std::size_t stringLength =
+            static_cast<std::size_t>(dtype) - static_cast<std::size_t>(z5::types::unicode1) + 1;
+
+        if (out.dimension() < 1 || out.shape().back() != stringLength) {
+            throw std::runtime_error(
+                "xtensor shape last dimension (" + std::to_string(out.shape().back()) +
+                ") must match string length (" + std::to_string(stringLength) + ")."
+            );
+        }
+
+        // get the offset and shape of the request without the string dimension
+        const std::size_t ndim = out.dimension() - 1;
+        types::ShapeType offset(roiBeginIter, roiBeginIter + ndim);
+        types::ShapeType shape(out.shape().begin(), out.shape().begin() + ndim);
+        ds.checkRequestShape(offset, shape);
+
+        // get the chunks that are involved in this request
+        std::vector<types::ShapeType> chunkRequests;
+        const auto& chunking = ds.chunking();
+        chunking.getBlocksOverlappingRoi(offset, shape, chunkRequests);
+        
+
+        const std::size_t elementSizeBytes = stringLength * sizeof(char32_t);
+        uint8_t* outBuffer = reinterpret_cast<uint8_t*>(out.data());
+
+        // read single or multi-threaded
+        if(numberOfThreads == 1) {
+            readSubarraySingleThreaded(ds, outBuffer, elementSizeBytes, offset, shape, chunkRequests);
+        } else {
+            // TODO: multithread support
+            readSubarraySingleThreaded(ds, outBuffer, elementSizeBytes, offset, shape, chunkRequests);
+        }
+    }
 
     template<typename T, typename ARRAY>
     inline void writeSubarraySingleThreaded(const Dataset & ds,
