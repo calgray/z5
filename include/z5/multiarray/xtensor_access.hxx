@@ -27,9 +27,6 @@ namespace multiarray {
                                     const std::vector<types::ShapeType>& chunkRequests) {
         const auto& chunking = ds.chunking();
 
-        // Compute total elements requested (excluding elementSize dimension)
-        std::size_t numElementsRequested = product(shape);
-
         // A staging buffer big enough for the largest chunk read (in elements, * elementSizeBytes)
         std::size_t maxChunkSize = ds.defaultChunkSize();
         std::vector<uint8_t> buffer(maxChunkSize * elementSizeBytes);
@@ -39,7 +36,7 @@ namespace multiarray {
 
         for (const auto& chunkId : chunkRequests) {
             // Find overlap between chunk and request
-            bool completeOverlap = chunking.getCoordinatesInRoi(
+            bool completeOvlp = chunking.getCoordinatesInRoi(
                 chunkId, offset, shape,
                 offsetInRequest, shapeInRequest,
                 offsetInChunk);
@@ -77,12 +74,21 @@ namespace multiarray {
             // Number of elements to copy in this chunk
             std::size_t nCopyElements = product(shapeInRequest);
 
-            // Copy each element (elementSizeBytes bytes) from buffer to outBuffer
-            for (std::size_t i = 0; i < nCopyElements; ++i) {
-                std::size_t outIdx = (outBaseIndex + i) * elementSizeBytes;
-                std::size_t bufIdx = (bufferBaseIndex + i) * elementSizeBytes;
-                std::memcpy(outBuffer + outIdx, buffer.data() + bufIdx, elementSizeBytes);
+            if (completeOvlp && shapeInRequest == chunkShape && bufferBaseIndex == 0) {
+                // Optimization: use memcpy if the full chunk overlaps and matches shape
+                std::memcpy(outBuffer + outBaseIndex * elementSizeBytes,
+                            buffer.data(),
+                            nCopyElements * elementSizeBytes);
             }
+            else {
+                // Copy each element (elementSizeBytes bytes) from buffer to outBuffer
+                for (std::size_t i = 0; i < nCopyElements; ++i) {
+                    std::size_t outIdx = (outBaseIndex + i) * elementSizeBytes;
+                    std::size_t bufIdx = (bufferBaseIndex + i) * elementSizeBytes;
+                    std::memcpy(outBuffer + outIdx, buffer.data() + bufIdx, elementSizeBytes);
+                }
+            }
+
         }
     }
 
