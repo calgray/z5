@@ -27,7 +27,7 @@ namespace compression {
             return types::raw;
         }
 
-        inline void getOptions(types::CompressionOptions & opts) const {
+        inline void getOptions(types::CompressionOptions &) const {
         }
     };
 
