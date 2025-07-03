@@ -129,10 +129,10 @@ namespace util {
 
         // TODO
         // return all blocks strictly in roi
-        inline void getBlocksInRoi(const types::ShapeType & roiBegin,
-                                   const types::ShapeType & roiShape,
-                                   std::vector<types::ShapeType> & blockList) const {
-        }
+        // inline void getBlocksInRoi(const types::ShapeType & roiBegin,
+        //                            const types::ShapeType & roiShape,
+        //                            std::vector<types::ShapeType> & blockList) const {
+        // }
 
         //
         // get the offset, shape of the block inside of the ROI as well as the offset of the ROI in chunk

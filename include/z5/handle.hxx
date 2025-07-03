@@ -109,11 +109,11 @@ namespace handle {
         Chunk(const types::ShapeType & chunkIndices,
               const types::ShapeType & defaultShape,
               const types::ShapeType & datasetShape,
-              const FileMode mode) : chunkIndices_(chunkIndices),
+              const FileMode mode) : Handle(mode),
+                                     chunkIndices_(chunkIndices),
                                      defaultShape_(defaultShape),
                                      datasetShape_(datasetShape),
-                                     boundedShape_(computeBoundedShape()),
-                                     Handle(mode){}
+                                     boundedShape_(computeBoundedShape()){}
         virtual ~Chunk() {}
 
         // expose relevant part of the derived's class API

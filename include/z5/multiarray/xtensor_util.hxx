@@ -49,7 +49,7 @@ namespace multiarray {
         auto & view = viewExpression.derived_cast();
         const std::size_t dim = view.dimension();
         // buffer size and view shape
-        const std::size_t bufSize = buffer.size();
+        // const std::size_t bufSize = buffer.size();
         const auto & viewShape = view.shape();
         // initialize the (1d) offset into the buffer and view
         std::size_t bufferOffset = 0;
@@ -149,7 +149,7 @@ namespace multiarray {
         const auto & view = viewExpression.derived_cast();
         const std::size_t dim = view.dimension();
         // buffer size and view shape
-        const std::size_t bufSize = buffer.size();
+        // const std::size_t bufSize = buffer.size();
         const auto & viewShape = view.shape();
         // initialize the (1d) offset into the buffer and view
         std::size_t bufferOffset = 0;
